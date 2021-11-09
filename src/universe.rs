@@ -40,7 +40,8 @@ impl Universe {
     }
 
     pub fn set_population(&mut self, num_types: usize, num_particles: usize) {
-        unimplemented!()
+        self.types.resize(num_types);
+        self.particles.resize(num_particles, Particle::default());
     }
 
     pub fn set_dimentions(&mut self, width: f32, height: f32) {
@@ -205,13 +206,13 @@ impl Universe {
         }
     }
 
-    pub fn draw(&self, handle: &mut RaylibDrawHandle) {
+    pub fn draw(&self, handle: &mut RaylibDrawHandle, alpha: f32) {
         for p in self.particles.iter() {
             handle.draw_circle(
                 p.x as i32,
                 p.y as i32,
                 RADIUS,
-                self.types.color(p.p_type as usize),
+                self.types.color(p.p_type as usize).fade(alpha),
             );
         }
     }

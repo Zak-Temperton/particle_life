@@ -17,6 +17,13 @@ impl ParticleTypes {
         }
     }
 
+    pub fn resize(&mut self, size: usize) {
+        self.color.resize(size, Color::BLACK);
+        self.attract.resize(size * size, 0.0);
+        self.min_r.resize(size * size, 0.0);
+        self.max_r.resize(size * size, 0.0);
+    }
+
     pub fn len(&self) -> usize {
         self.color.len()
     }
