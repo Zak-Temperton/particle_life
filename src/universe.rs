@@ -5,18 +5,24 @@ use std::{fmt::Display, vec};
 use rand::{distributions::Distribution, prelude::ThreadRng, Rng};
 use raylib::{
     color::Color,
+    math::Vector2,
     prelude::{RaylibDraw, RaylibDrawHandle},
 };
 use statrs::distribution::{Normal, Uniform};
 
-use crate::particle::{Particle, ParticleTypes};
+use crate::{
+    camera::Camera,
+    min,
+    particle::{Particle, ParticleTypes},
+};
 
 const RADIUS: f32 = 5.0;
 const DIAMETER: f32 = 2.0 * RADIUS;
 const R_SMOOTH: f32 = 2.0;
+
 pub struct Universe {
-    centre: (f32, f32),
-    dimentions: (f32, f32),
+    centre: Vector2,
+    dimentions: Vector2,
     zoom: f32,
     wrap: bool,
     particles: Vec<Particle>,
@@ -28,8 +34,8 @@ pub struct Universe {
 impl Universe {
     pub fn new(num_types: usize, num_particles: usize, width: f32, height: f32) -> Self {
         Universe {
-            centre: (width * 0.5, height * 0.5),
-            dimentions: (width, height),
+            centre: Vector2::new(width * 0.5, height * 0.5),
+            dimentions: Vector2::new(width, height),
             zoom: 1.0,
             wrap: true,
             types: ParticleTypes::with_len(num_types),
@@ -45,7 +51,7 @@ impl Universe {
     }
 
     pub fn set_dimentions(&mut self, width: f32, height: f32) {
-        self.dimentions = (width, height);
+        self.dimentions = Vector2::new(width, height);
     }
 
     pub fn re_seed(
@@ -109,8 +115,8 @@ impl Universe {
     pub fn set_random_particles(&mut self) {
         for p in self.particles.iter_mut() {
             p.p_type = self.rng.gen_range(0, self.types.len()) as u8;
-            p.x = (self.rng.gen_range(0.0, 1.0) * 0.5 + 0.25) * self.dimentions.0;
-            p.y = (self.rng.gen_range(0.0, 1.0) * 0.5 + 0.25) * self.dimentions.1;
+            p.x = (self.rng.gen_range(0.0, 1.0) * 0.5 + 0.25) * self.dimentions.x;
+            p.y = (self.rng.gen_range(0.0, 1.0) * 0.5 + 0.25) * self.dimentions.y;
 
             let rand_norm = Normal::new(0.0, 1.0).unwrap();
             p.vx = rand_norm.sample(&mut self.rng) as f32 * 0.2;
@@ -131,15 +137,15 @@ impl Universe {
 
                 let (mut dx, mut dy) = (q.x - p.x, q.y - p.y);
                 if self.wrap {
-                    if dx > self.dimentions.0 * 0.5 {
-                        dx -= self.dimentions.0;
-                    } else if dx < -self.dimentions.0 {
-                        dx += self.dimentions.0;
+                    if dx > self.dimentions.x * 0.5 {
+                        dx -= self.dimentions.x;
+                    } else if dx < -self.dimentions.x {
+                        dx += self.dimentions.x;
                     }
-                    if dy > self.dimentions.1 * 0.5 {
-                        dy -= self.dimentions.1;
-                    } else if dy < -self.dimentions.1 {
-                        dy += self.dimentions.1;
+                    if dy > self.dimentions.y * 0.5 {
+                        dy -= self.dimentions.y;
+                    } else if dy < -self.dimentions.y {
+                        dy += self.dimentions.y;
                     }
                 }
                 let r2 = dx * dx + dy * dy;
@@ -178,29 +184,29 @@ impl Universe {
             p.vy *= 1.0 - self.rand_settings.friction;
             if self.wrap {
                 if p.x < 0.0 {
-                    p.x += self.dimentions.0;
-                } else if p.x >= self.dimentions.0 {
-                    p.x -= self.dimentions.0;
+                    p.x += self.dimentions.x;
+                } else if p.x >= self.dimentions.x {
+                    p.x -= self.dimentions.x;
                 }
                 if p.y < 0.0 {
-                    p.y += self.dimentions.1;
-                } else if p.y >= self.dimentions.1 {
-                    p.y -= self.dimentions.1;
+                    p.y += self.dimentions.y;
+                } else if p.y >= self.dimentions.y {
+                    p.y -= self.dimentions.y;
                 }
             } else {
                 if p.x <= DIAMETER {
                     p.vx = -p.vx;
                     p.x = DIAMETER;
-                } else if p.x >= self.dimentions.0 - DIAMETER {
+                } else if p.x >= self.dimentions.x - DIAMETER {
                     p.vx = -p.vx;
-                    p.x = self.dimentions.0 - DIAMETER;
+                    p.x = self.dimentions.x - DIAMETER;
                 }
                 if p.y <= DIAMETER {
                     p.vy = -p.vy;
                     p.y = DIAMETER;
-                } else if p.y >= self.dimentions.1 - DIAMETER {
+                } else if p.y >= self.dimentions.y - DIAMETER {
                     p.vy = -p.vy;
-                    p.y = self.dimentions.1 - DIAMETER;
+                    p.y = self.dimentions.y - DIAMETER;
                 }
             }
         }
@@ -209,17 +215,16 @@ impl Universe {
     pub fn draw(&self, handle: &mut RaylibDrawHandle, alpha: f32) {
         for p in self.particles.iter() {
             handle.draw_circle(
-                p.x as i32,
-                p.y as i32,
-                RADIUS,
+                (((p.x - self.centre.x) * self.zoom) + self.dimentions.x / 2.0) as i32,
+                (((p.y - self.centre.y) * self.zoom) + self.dimentions.y / 2.0) as i32,
+                RADIUS * self.zoom,
                 self.types.color(p.p_type as usize).fade(alpha),
             );
         }
     }
 
     pub fn get_index(&self, x: usize, y: usize) -> Option<usize> {
-        let (mut cx, mut cy) = (0.0, 0.0);
-        self.to_centre(x, y, &mut cx, &mut cy);
+        let (cx, cy) = self.get_centre(x, y);
         for (i, p) in self.particles.iter().enumerate() {
             let dx = p.x - cx;
             let dy = p.y - cy;
@@ -231,22 +236,47 @@ impl Universe {
     }
 
     pub fn get_particle_x(&self, index: usize) -> Option<f32> {
-        match self.particles.get(index) {
-            Some(p) => Some(p.x),
-            None => None,
+        if let Some(p) = self.particles.get(index) {
+            Some(p.x)
+        } else {
+            None
         }
     }
 
     pub fn get_particle_y(&self, index: usize) -> Option<f32> {
-        match self.particles.get(index) {
-            Some(p) => Some(p.y),
-            None => None,
+        if let Some(p) = self.particles.get(index) {
+            Some(p.y)
+        } else {
+            None
         }
     }
 
-    pub fn to_centre(&self, x: usize, y: usize, cx: &mut f32, cy: &mut f32) {
-        *cx = self.centre.0 + (x as f32 - self.dimentions.0 / 2.0) / self.zoom;
-        *cy = self.centre.1 + (y as f32 - self.dimentions.1 / 2.0) / self.zoom;
+    pub fn to_centre(&self, x: usize, y: usize, cam: &mut Camera) {
+        *cam.x_dest_mut() = self.centre.x + (x as f32 - self.dimentions.x / 2.0) / self.zoom;
+        *cam.y_dest_mut() = self.centre.y + (y as f32 - self.dimentions.y / 2.0) / self.zoom;
+    }
+
+    pub fn get_centre(&self, x: usize, y: usize) -> (f32, f32) {
+        (
+            self.centre.x + (x as f32 - self.dimentions.x / 2.0) / self.zoom,
+            self.centre.y + (y as f32 - self.dimentions.y / 2.0) / self.zoom,
+        )
+    }
+
+    pub fn zoom(&mut self, cx: f32, cy: f32, zoom: f32) {
+        self.centre.x = cx;
+        self.centre.y = cy;
+        self.zoom = 1.0_f32.max(zoom);
+        self.centre.x = min(
+            self.centre.x,
+            self.dimentions.x as f32 * (1.0 - 0.5 / self.zoom),
+        );
+        self.centre.y = min(
+            self.centre.y,
+            self.dimentions.y as f32 * (1.0 - 0.5 / self.zoom),
+        );
+        self.centre.x = min(self.centre.x, self.dimentions.x as f32 * (0.5 / self.zoom));
+        self.centre.y = min(self.centre.y, self.dimentions.y as f32 * (0.5 / self.zoom));
     }
 }
 
@@ -259,8 +289,6 @@ impl Display for Universe {
         for i in range.clone() {
             for j in range.clone() {
                 attract.push_str(format!("{:.4}    ", self.types.attract(i, j)).as_str());
-                println!("c {},{}", i, j);
-
                 min_r.push_str(format!("{:.4}    ", self.types.min_r(i, j)).as_str());
                 max_r.push_str(format!("{:.4}    ", self.types.max_r(i, j)).as_str());
             }
