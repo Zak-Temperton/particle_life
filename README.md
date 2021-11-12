@@ -1,4 +1,4 @@
-# ParticleLife
+# Particle Life
 
 This is a simulation of particle "life" based on randomised attractive and repulsive forces between particle types.
 This is a clone of [Particle Life by HackerPoet](https://github.com/HackerPoet/Particle-Life), but rewritten in the Rust programming languages with only minor differences.
