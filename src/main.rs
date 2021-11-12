@@ -54,7 +54,7 @@ classes.
             'S' - Randomize (Small Clusters)
             'W' - Toggle Wrap-Around
         Enter - Keep rules, but re-seed particles
-        Space - Hold for slow-motion
+        Space - Toggle slow motion
             Tab - Print current parameters to console
     Left Click - Click a particle to follow it
     Right Click - Click anywhere to unfollow particle
