@@ -83,12 +83,8 @@ impl Universe {
             Uniform::new(settings.maxr_lower as f64, settings.maxr_upper as f64).unwrap();
         let len = self.types.len() as f32;
         for i in 0..self.types.len() {
-            *self.types.color_mut(i) = Color::new(
-                ((i as f32 / len) * 255.0) as u8,
-                255,
-                (((i & 1) as f32 * 0.5 + 0.5) * 255.0) as u8,
-                255,
-            );
+            *self.types.color_mut(i) =
+                Color::new(((i as f32 / len) * 255.0) as u8, 255, self.rng.gen(), 255);
             for j in 0..self.types.len() {
                 if i == j {
                     *self.types.attract_mut(i, j) = -(rand_attr.sample(&mut self.rng).abs() as f32);
