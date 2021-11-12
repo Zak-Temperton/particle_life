@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
 use std::{fmt::Display, vec};
 
 use rand::{distributions::Distribution, prelude::ThreadRng, Rng};
@@ -48,10 +46,6 @@ impl Universe {
     pub fn set_population(&mut self, num_types: usize, num_particles: usize) {
         self.types.resize(num_types);
         self.particles.resize(num_particles, Particle::default());
-    }
-
-    pub fn set_dimentions(&mut self, width: f32, height: f32) {
-        self.dimentions = Vector2::new(width, height);
     }
 
     pub fn re_seed(
