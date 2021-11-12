@@ -12,7 +12,7 @@ use statrs::distribution::{Normal, Uniform};
 
 use crate::{
     camera::Camera,
-    min,
+    max, min,
     particle::{Particle, ParticleTypes},
 };
 
@@ -224,10 +224,10 @@ impl Universe {
     }
 
     pub fn get_index(&self, x: usize, y: usize) -> Option<usize> {
-        let (cx, cy) = self.get_centre(x, y);
+        let c = self.get_centre(x, y);
         for (i, p) in self.particles.iter().enumerate() {
-            let dx = p.x - cx;
-            let dy = p.y - cy;
+            let dx = p.x - c.x;
+            let dy = p.y - c.y;
             if dx * dx + dy * dy < RADIUS * RADIUS {
                 return Some(i);
             }
@@ -256,8 +256,8 @@ impl Universe {
         *cam.y_dest_mut() = self.centre.y + (y as f32 - self.dimentions.y / 2.0) / self.zoom;
     }
 
-    pub fn get_centre(&self, x: usize, y: usize) -> (f32, f32) {
-        (
+    pub fn get_centre(&self, x: usize, y: usize) -> Vector2 {
+        Vector2::new(
             self.centre.x + (x as f32 - self.dimentions.x / 2.0) / self.zoom,
             self.centre.y + (y as f32 - self.dimentions.y / 2.0) / self.zoom,
         )
@@ -275,8 +275,8 @@ impl Universe {
             self.centre.y,
             self.dimentions.y as f32 * (1.0 - 0.5 / self.zoom),
         );
-        self.centre.x = min(self.centre.x, self.dimentions.x as f32 * (0.5 / self.zoom));
-        self.centre.y = min(self.centre.y, self.dimentions.y as f32 * (0.5 / self.zoom));
+        self.centre.x = max(self.centre.x, self.dimentions.x as f32 * (0.5 / self.zoom));
+        self.centre.y = max(self.centre.y, self.dimentions.y as f32 * (0.5 / self.zoom));
     }
 }
 

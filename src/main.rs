@@ -113,10 +113,6 @@ Scroll Wheel - Zoom in/out
                     steps_per_frame = 1
                 }
             }
-            // Some(KeyboardKey::KEY_UP) => {
-            //     *cam.zoom_dest_mut() *= 1.1;
-            //     dbg!(cam.zoom_dest());
-            // }
             _ => {
                 let mouse_pos = rl.get_mouse_position();
                 if rl.get_mouse_wheel_move() != 0.0 {
@@ -127,10 +123,10 @@ Scroll Wheel - Zoom in/out
                     {
                         universe.to_centre(mouse_pos.x as usize, mouse_pos.y as usize, &mut cam);
                     }
-                } else if rl.is_mouse_button_down(MouseButton::MOUSE_LEFT_BUTTON) {
+                } else if rl.is_mouse_button_pressed(MouseButton::MOUSE_LEFT_BUTTON) {
                     *cam.track_index_mut() =
                         universe.get_index(mouse_pos.x as usize, mouse_pos.y as usize);
-                } else if rl.is_mouse_button_down(MouseButton::MOUSE_RIGHT_BUTTON) {
+                } else if rl.is_mouse_button_pressed(MouseButton::MOUSE_RIGHT_BUTTON) {
                     *cam.x_dest_mut() = (WIDTH / 2) as f32;
                     *cam.y_dest_mut() = (HEIGHT / 2) as f32;
                     *cam.track_index_mut() = None;
