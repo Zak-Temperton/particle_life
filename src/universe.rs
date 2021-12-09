@@ -93,12 +93,12 @@ impl Universe {
     }
 
     pub fn set_random_particles(&mut self) {
+        let rand_norm = Normal::new(0.0, 1.0).unwrap();
         for p in self.particles.iter_mut() {
             p.p_type = self.rng.gen_range(0..self.types.len()) as u8;
             p.x = (self.rng.gen_range(0.0..=1.0) * 0.5 + 0.25) * self.dimentions.x;
             p.y = (self.rng.gen_range(0.0..=1.0) * 0.5 + 0.25) * self.dimentions.y;
 
-            let rand_norm = Normal::new(0.0, 1.0).unwrap();
             p.vx = rand_norm.sample(&mut self.rng) as f32 * 0.2;
             p.vy = rand_norm.sample(&mut self.rng) as f32 * 0.2;
         }
