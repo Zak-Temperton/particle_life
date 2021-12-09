@@ -3,11 +3,9 @@ use std::time::{Duration, Instant};
 use camera::Camera;
 use raylib::{
     color::Color,
-    consts::{KeyboardKey, MouseButton},
-    prelude::RaylibDraw,
+    prelude::{KeyboardKey, MouseButton, RaylibDraw},
 };
 use universe::Universe;
-
 mod camera;
 mod particle;
 mod universe;
@@ -31,7 +29,7 @@ fn main() {
         .vsync()
         .build();
     let mut universe = Universe::new(4, 400, WIDTH as f32, HEIGHT as f32);
-    universe.re_seed(-0.02, 0.06, 0.0, 20.0, 20.0, 70.0, 0.05, false);
+    universe.re_seed(-0.02, 0.06, (0.0, 20.0), (20.0, 70.0), 0.05, false);
     let mut cam = Camera::new();
     println! {"
 =========================================================
@@ -65,43 +63,43 @@ Scroll Wheel - Zoom in/out
         match rl.get_key_pressed() {
             Some(KeyboardKey::KEY_B) => {
                 universe.set_population(9, 400);
-                universe.re_seed(-0.02, 0.06, 0.0, 20.0, 20.0, 70.0, 0.05, false);
+                universe.re_seed(-0.02, 0.06, (0.0, 20.0), (20.0, 70.0), 0.05, false);
             }
             Some(KeyboardKey::KEY_C) => {
                 universe.set_population(6, 400);
-                universe.re_seed(0.02, 0.04, 0.0, 30.0, 30.0, 100.0, 0.01, false);
+                universe.re_seed(0.02, 0.04, (0.0, 30.0), (30.0, 100.0), 0.01, false);
             }
             Some(KeyboardKey::KEY_D) => {
                 universe.set_population(12, 400);
-                universe.re_seed(-0.01, 0.04, 0.0, 20.0, 10.0, 60.0, 0.05, true);
+                universe.re_seed(-0.01, 0.04, (0.0, 20.0), (10.0, 60.0), 0.05, true);
             }
             Some(KeyboardKey::KEY_F) => {
                 universe.set_population(6, 300);
-                universe.re_seed(0.01, 0.05, 10.0, 10.0, 10.0, 60.0, 0.0, true);
+                universe.re_seed(0.01, 0.05, (10.0, 10.0), (10.0, 60.0), 0.0, true);
             }
             Some(KeyboardKey::KEY_G) => {
                 universe.set_population(6, 400);
-                universe.re_seed(0.0, 0.06, 0.0, 20.0, 10.0, 50.0, 0.1, true);
+                universe.re_seed(0.0, 0.06, (0.0, 20.0), (10.0, 50.0), 0.1, true);
             }
             Some(KeyboardKey::KEY_H) => {
                 universe.set_population(4, 400);
-                universe.re_seed(0.0, 0.04, 10.0, 10.0, 10.0, 80.0, 0.05, true);
+                universe.re_seed(0.0, 0.04, (10.0, 10.0), (10.0, 80.0), 0.05, true);
             }
             Some(KeyboardKey::KEY_L) => {
                 universe.set_population(6, 400);
-                universe.re_seed(0.025, 0.02, 0.0, 30.0, 30.0, 100.0, 0.2, false);
+                universe.re_seed(0.025, 0.02, (0.0, 30.0), (30.0, 100.0), 0.2, false);
             }
             Some(KeyboardKey::KEY_M) => {
                 universe.set_population(6, 400);
-                universe.re_seed(0.02, 0.05, 0.0, 20.0, 20.0, 50.0, 0.05, false);
+                universe.re_seed(0.02, 0.05, (0.0, 20.0), (20.0, 50.0), 0.05, false);
             }
             Some(KeyboardKey::KEY_Q) => {
                 universe.set_population(6, 300);
-                universe.re_seed(-0.02, 0.1, 10.0, 20.0, 20.0, 60.0, 0.2, false);
+                universe.re_seed(-0.02, 0.1, (10.0, 20.0), (20.0, 60.0), 0.2, false);
             }
             Some(KeyboardKey::KEY_S) => {
                 universe.set_population(6, 300);
-                universe.re_seed(-0.005, 0.01, 10.0, 10.0, 20.0, 50.0, 0.01, false);
+                universe.re_seed(-0.005, 0.01, (10.0, 10.0), (20.0, 50.0), 0.01, false);
             }
             Some(KeyboardKey::KEY_W) => universe.toggle_wrap(),
             Some(KeyboardKey::KEY_ENTER) => universe.set_random_particles(),

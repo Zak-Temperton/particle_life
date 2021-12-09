@@ -52,23 +52,13 @@ impl Universe {
         &mut self,
         attract_mean: f32,
         attract_std: f32,
-        minr_lower: f32,
-        minr_upper: f32,
-        maxr_lower: f32,
-        maxr_upper: f32,
+        minr: (f32, f32),
+        max_r: (f32, f32),
         friction: f32,
         flat_force: bool,
     ) {
-        self.rand_settings.re_seed(
-            attract_mean,
-            attract_std,
-            minr_lower,
-            minr_upper,
-            maxr_lower,
-            maxr_upper,
-            friction,
-            flat_force,
-        );
+        self.rand_settings
+            .re_seed(attract_mean, attract_std, minr, max_r, friction, flat_force);
         self.set_random_types();
         self.set_random_particles();
     }
@@ -104,9 +94,9 @@ impl Universe {
 
     pub fn set_random_particles(&mut self) {
         for p in self.particles.iter_mut() {
-            p.p_type = self.rng.gen_range(0, self.types.len()) as u8;
-            p.x = (self.rng.gen_range(0.0, 1.0) * 0.5 + 0.25) * self.dimentions.x;
-            p.y = (self.rng.gen_range(0.0, 1.0) * 0.5 + 0.25) * self.dimentions.y;
+            p.p_type = self.rng.gen_range(0..self.types.len()) as u8;
+            p.x = (self.rng.gen_range(0.0..=1.0) * 0.5 + 0.25) * self.dimentions.x;
+            p.y = (self.rng.gen_range(0.0..=1.0) * 0.5 + 0.25) * self.dimentions.y;
 
             let rand_norm = Normal::new(0.0, 1.0).unwrap();
             p.vx = rand_norm.sample(&mut self.rng) as f32 * 0.2;
@@ -121,9 +111,9 @@ impl Universe {
     pub fn step(&mut self) {
         let len = self.particles.len();
         for i in 0..len {
-            let p = self.particles.get(i).unwrap().clone();
+            let p = *self.particles.get(i).unwrap();
             for j in 0..len {
-                let q = self.particles.get(j).unwrap().clone();
+                let q = *self.particles.get(j).unwrap();
 
                 let (mut dx, mut dy) = (q.x - p.x, q.y - p.y);
                 if self.wrap {
@@ -226,19 +216,11 @@ impl Universe {
     }
 
     pub fn get_particle_x(&self, index: usize) -> Option<f32> {
-        if let Some(p) = self.particles.get(index) {
-            Some(p.x)
-        } else {
-            None
-        }
+        self.particles.get(index).map(|p| p.x)
     }
 
     pub fn get_particle_y(&self, index: usize) -> Option<f32> {
-        if let Some(p) = self.particles.get(index) {
-            Some(p.y)
-        } else {
-            None
-        }
+        self.particles.get(index).map(|p| p.y)
     }
 
     pub fn to_centre(&self, x: usize, y: usize, cam: &mut Camera) {
@@ -319,20 +301,18 @@ impl RandomSettings {
         &mut self,
         attract_mean: f32,
         attract_std: f32,
-        minr_lower: f32,
-        minr_upper: f32,
-        maxr_lower: f32,
-        maxr_upper: f32,
+        minr: (f32, f32),
+        maxr: (f32, f32),
         friction: f32,
         flat_force: bool,
     ) {
         *self = RandomSettings {
             attract_mean,
             attract_std,
-            minr_lower,
-            minr_upper,
-            maxr_lower,
-            maxr_upper,
+            minr_lower: minr.0,
+            minr_upper: minr.1,
+            maxr_lower: maxr.0,
+            maxr_upper: maxr.1,
             friction,
             flat_force,
         }
