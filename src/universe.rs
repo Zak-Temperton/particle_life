@@ -27,6 +27,8 @@ pub struct Universe {
     types: ParticleTypes,
     rng: ThreadRng,
     rand_settings: RandomSettings,
+    friction: f32,
+    flat_force: bool,
 }
 
 impl Universe {
@@ -40,6 +42,8 @@ impl Universe {
             particles: vec![Particle::default(); num_particles],
             rng: rand::thread_rng(),
             rand_settings: RandomSettings::new(),
+            friction: 0.0,
+            flat_force: false,
         }
     }
 
@@ -57,8 +61,10 @@ impl Universe {
         friction: f32,
         flat_force: bool,
     ) {
+        self.friction = friction;
+        self.flat_force = flat_force;
         self.rand_settings
-            .re_seed(attract_mean, attract_std, minr, max_r, friction, flat_force);
+            .re_seed(attract_mean, attract_std, minr, max_r);
         self.set_random_types();
         self.set_random_particles();
     }
@@ -139,7 +145,7 @@ impl Universe {
                 dx /= r;
                 dy /= r;
                 let f = if r > min_r {
-                    if self.rand_settings.flat_force {
+                    if self.flat_force {
                         self.types.attract(p.p_type as usize, q.p_type as usize)
                     } else {
                         let numer = 2.0 * (r - 0.5 * (max_r + min_r)).abs();
@@ -160,8 +166,8 @@ impl Universe {
         for p in self.particles.iter_mut() {
             p.x += p.vx;
             p.y += p.vy;
-            p.vx *= 1.0 - self.rand_settings.friction;
-            p.vy *= 1.0 - self.rand_settings.friction;
+            p.vx *= 1.0 - self.friction;
+            p.vy *= 1.0 - self.friction;
             if self.wrap {
                 if p.x < 0.0 {
                     p.x += self.dimentions.x;
@@ -280,8 +286,6 @@ pub struct RandomSettings {
     minr_upper: f32,
     maxr_lower: f32,
     maxr_upper: f32,
-    friction: f32,
-    flat_force: bool,
 }
 
 impl RandomSettings {
@@ -293,8 +297,6 @@ impl RandomSettings {
             minr_upper: 0.0,
             maxr_lower: 0.0,
             maxr_upper: 0.0,
-            friction: 0.0,
-            flat_force: false,
         }
     }
     pub fn re_seed(
@@ -303,8 +305,6 @@ impl RandomSettings {
         attract_std: f32,
         minr: (f32, f32),
         maxr: (f32, f32),
-        friction: f32,
-        flat_force: bool,
     ) {
         *self = RandomSettings {
             attract_mean,
@@ -313,8 +313,6 @@ impl RandomSettings {
             minr_upper: minr.1,
             maxr_lower: maxr.0,
             maxr_upper: maxr.1,
-            friction,
-            flat_force,
         }
     }
 }
