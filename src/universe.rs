@@ -79,21 +79,22 @@ impl Universe {
             Uniform::new(settings.max_r_lower as f64, settings.max_r_upper as f64).unwrap();
         let len = self.types.len() as f32;
         for i in 0..self.types.len() {
-            *self.types.color_mut(i) =
+            *self.types.color_mut(i).unwrap() =
                 Color::new(((i as f32 / len) * 255.0) as u8, 255, self.rng.gen(), 255);
             for j in 0..self.types.len() {
                 if i == j {
-                    *self.types.attract_mut(i, j) = -(rand_attr.sample(&mut self.rng).abs() as f32);
-                    *self.types.min_r_mut(i, j) = DIAMETER;
+                    *self.types.attract_mut(i, j).unwrap() =
+                        -(rand_attr.sample(&mut self.rng).abs() as f32);
+                    *self.types.min_r_mut(i, j).unwrap() = DIAMETER;
                 } else {
-                    *self.types.attract_mut(i, j) = rand_attr.sample(&mut self.rng) as f32;
-                    *self.types.min_r_mut(i, j) =
+                    *self.types.attract_mut(i, j).unwrap() = rand_attr.sample(&mut self.rng) as f32;
+                    *self.types.min_r_mut(i, j).unwrap() =
                         DIAMETER.max(rand_min_r.sample(&mut self.rng) as f32);
                 }
-                *self.types.max_r_mut(i, j) =
-                    (rand_max_r.sample(&mut self.rng) as f32).max(self.types.min_r(i, j));
-                *self.types.max_r_mut(j, i) = self.types.max_r(i, j);
-                *self.types.min_r_mut(j, i) = self.types.min_r(i, j);
+                *self.types.max_r_mut(i, j).unwrap() =
+                    (rand_max_r.sample(&mut self.rng) as f32).max(*self.types.min_r(i, j).unwrap());
+                *self.types.max_r_mut(j, i).unwrap() = *self.types.max_r(i, j).unwrap();
+                *self.types.min_r_mut(j, i).unwrap() = *self.types.min_r(i, j).unwrap();
             }
         }
     }
@@ -136,8 +137,14 @@ impl Universe {
                 }
                 let r2 = dx * dx + dy * dy;
 
-                let min_r = self.types.min_r(p.p_type as usize, q.p_type as usize);
-                let max_r = self.types.max_r(p.p_type as usize, q.p_type as usize);
+                let min_r = *self
+                    .types
+                    .min_r(p.p_type as usize, q.p_type as usize)
+                    .unwrap();
+                let max_r = *self
+                    .types
+                    .max_r(p.p_type as usize, q.p_type as usize)
+                    .unwrap();
                 if r2 > max_r * max_r || r2 < 0.01 {
                     continue;
                 }
@@ -146,11 +153,17 @@ impl Universe {
                 dy /= r;
                 let f = if r > min_r {
                     if self.flat_force {
-                        self.types.attract(p.p_type as usize, q.p_type as usize)
+                        *self
+                            .types
+                            .attract(p.p_type as usize, q.p_type as usize)
+                            .unwrap()
                     } else {
                         let numer = 2.0 * (r - 0.5 * (max_r + min_r)).abs();
                         let denom = max_r - min_r;
-                        self.types.attract(p.p_type as usize, q.p_type as usize)
+                        *self
+                            .types
+                            .attract(p.p_type as usize, q.p_type as usize)
+                            .unwrap()
                             * (1.0 - (numer / denom))
                     }
                 } else {
@@ -204,7 +217,7 @@ impl Universe {
                 (((p.x - self.centre.x) * self.zoom) + self.dimentions.x / 2.0) as i32,
                 (((p.y - self.centre.y) * self.zoom) + self.dimentions.y / 2.0) as i32,
                 RADIUS * self.zoom,
-                self.types.color(p.p_type as usize).fade(alpha),
+                self.types.color(p.p_type as usize).unwrap().fade(alpha),
             );
         }
     }
@@ -266,9 +279,9 @@ impl Display for Universe {
         let range = 0..self.types.len();
         for i in range.clone() {
             for j in range.clone() {
-                attract.push_str(format!("{:.4}    ", self.types.attract(i, j)).as_str());
-                min_r.push_str(format!("{:.4}    ", self.types.min_r(i, j)).as_str());
-                max_r.push_str(format!("{:.4}    ", self.types.max_r(i, j)).as_str());
+                attract.push_str(format!("{:.4}    ", self.types.attract(i, j).unwrap()).as_str());
+                min_r.push_str(format!("{:.4}    ", self.types.min_r(i, j).unwrap()).as_str());
+                max_r.push_str(format!("{:.4}    ", self.types.max_r(i, j).unwrap()).as_str());
             }
         }
         write!(

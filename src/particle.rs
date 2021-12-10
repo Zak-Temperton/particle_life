@@ -28,39 +28,39 @@ impl ParticleTypes {
         self.color.len()
     }
 
-    pub fn color(&self, i: usize) -> Color {
-        self.color[i]
+    pub fn color(&self, i: usize) -> Option<&Color> {
+        self.color.get(i)
     }
 
-    pub fn color_mut(&mut self, i: usize) -> &mut Color {
-        &mut self.color[i]
+    pub fn color_mut(&mut self, i: usize) -> Option<&mut Color> {
+        self.color.get_mut(i)
     }
 
-    pub fn attract(&self, i: usize, j: usize) -> f32 {
-        self.attract[i * self.len() + j]
+    pub fn attract(&self, i: usize, j: usize) -> Option<&f32> {
+        self.attract.get(i * self.len() + j)
     }
 
-    pub fn attract_mut(&mut self, i: usize, j: usize) -> &mut f32 {
+    pub fn attract_mut(&mut self, i: usize, j: usize) -> Option<&mut f32> {
         let len = self.len();
-        &mut self.attract[i * len + j]
+        self.attract.get_mut(i * len + j)
     }
 
-    pub fn min_r(&self, i: usize, j: usize) -> f32 {
-        self.min_r[i * self.len() + j]
+    pub fn min_r(&self, i: usize, j: usize) -> Option<&f32> {
+        self.min_r.get(i * self.len() + j)
     }
 
-    pub fn min_r_mut(&mut self, i: usize, j: usize) -> &mut f32 {
+    pub fn min_r_mut(&mut self, i: usize, j: usize) -> Option<&mut f32> {
         let len = self.len();
-        &mut self.min_r[i * len + j]
+        self.min_r.get_mut(i * len + j)
     }
 
-    pub fn max_r(&self, i: usize, j: usize) -> f32 {
-        self.max_r[i * self.len() + j]
+    pub fn max_r(&self, i: usize, j: usize) -> Option<&f32> {
+        self.max_r.get(i * self.len() + j)
     }
 
-    pub fn max_r_mut(&mut self, i: usize, j: usize) -> &mut f32 {
+    pub fn max_r_mut(&mut self, i: usize, j: usize) -> Option<&mut f32> {
         let len = self.len();
-        &mut self.max_r[i * len + j]
+        self.max_r.get_mut(i * len + j)
     }
 }
 
