@@ -56,7 +56,7 @@ impl Universe {
         &mut self,
         attract_mean: f32,
         attract_std: f32,
-        minr: (f32, f32),
+        min_r: (f32, f32),
         max_r: (f32, f32),
         friction: f32,
         flat_force: bool,
@@ -64,7 +64,7 @@ impl Universe {
         self.friction = friction;
         self.flat_force = flat_force;
         self.rand_settings
-            .re_seed(attract_mean, attract_std, minr, max_r);
+            .re_seed(attract_mean, attract_std, min_r, max_r);
         self.set_random_types();
         self.set_random_particles();
     }
@@ -73,10 +73,10 @@ impl Universe {
         let settings = &self.rand_settings;
         let rand_attr =
             Normal::new(settings.attract_mean as f64, settings.attract_std as f64).unwrap();
-        let rand_minr =
-            Uniform::new(settings.minr_lower as f64, settings.minr_upper as f64).unwrap();
-        let rand_maxr =
-            Uniform::new(settings.maxr_lower as f64, settings.maxr_upper as f64).unwrap();
+        let rand_min_r =
+            Uniform::new(settings.min_r_lower as f64, settings.min_r_upper as f64).unwrap();
+        let rand_max_r =
+            Uniform::new(settings.max_r_lower as f64, settings.max_r_upper as f64).unwrap();
         let len = self.types.len() as f32;
         for i in 0..self.types.len() {
             *self.types.color_mut(i) =
@@ -88,10 +88,10 @@ impl Universe {
                 } else {
                     *self.types.attract_mut(i, j) = rand_attr.sample(&mut self.rng) as f32;
                     *self.types.min_r_mut(i, j) =
-                        DIAMETER.max(rand_minr.sample(&mut self.rng) as f32);
+                        DIAMETER.max(rand_min_r.sample(&mut self.rng) as f32);
                 }
                 *self.types.max_r_mut(i, j) =
-                    (rand_maxr.sample(&mut self.rng) as f32).max(self.types.min_r(i, j));
+                    (rand_max_r.sample(&mut self.rng) as f32).max(self.types.min_r(i, j));
                 *self.types.max_r_mut(j, i) = self.types.max_r(i, j);
                 *self.types.min_r_mut(j, i) = self.types.min_r(i, j);
             }
@@ -282,10 +282,10 @@ impl Display for Universe {
 pub struct RandomSettings {
     attract_mean: f32,
     attract_std: f32,
-    minr_lower: f32,
-    minr_upper: f32,
-    maxr_lower: f32,
-    maxr_upper: f32,
+    min_r_lower: f32,
+    min_r_upper: f32,
+    max_r_lower: f32,
+    max_r_upper: f32,
 }
 
 impl RandomSettings {
@@ -293,26 +293,26 @@ impl RandomSettings {
         RandomSettings {
             attract_mean: 0.0,
             attract_std: 0.0,
-            minr_lower: 0.0,
-            minr_upper: 0.0,
-            maxr_lower: 0.0,
-            maxr_upper: 0.0,
+            min_r_lower: 0.0,
+            min_r_upper: 0.0,
+            max_r_lower: 0.0,
+            max_r_upper: 0.0,
         }
     }
     pub fn re_seed(
         &mut self,
         attract_mean: f32,
         attract_std: f32,
-        minr: (f32, f32),
-        maxr: (f32, f32),
+        min_r: (f32, f32),
+        max_r: (f32, f32),
     ) {
         *self = RandomSettings {
             attract_mean,
             attract_std,
-            minr_lower: minr.0,
-            minr_upper: minr.1,
-            maxr_lower: maxr.0,
-            maxr_upper: maxr.1,
+            min_r_lower: min_r.0,
+            min_r_upper: min_r.1,
+            max_r_lower: max_r.0,
+            max_r_upper: max_r.1,
         }
     }
 }
